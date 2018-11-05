@@ -42,6 +42,8 @@ RUN cd  /home/airflow && \
     mv /home/airflow/temp/airflow-rest-api-plugin/plugins /home/airflow/plugins/rest_api && \
     rm -rf /home/airflow/temp
 
+COPY legion-plugin.py /home/airflow/plugins/legion-plugin.py
+
 RUN rm -rf \
     /var/lib/apt/lists/* \
     /tmp/* \
