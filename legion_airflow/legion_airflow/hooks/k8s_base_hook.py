@@ -19,7 +19,7 @@ K8SBaseHook module
 import os
 import yaml
 from airflow.hooks.base_hook import BaseHook
-from airflow.models import Connection
+from airflow.models import Connection, Variable
 from airflow.utils.log.logging_mixin import LoggingMixin
 from legion.k8s import K8SSecretStorage
 
@@ -61,7 +61,7 @@ class K8SBaseHook(BaseHook):
         """
         config_map = K8SSecretStorage.retrive(
             storage_name=cls.STORAGE_NAME_PREFIX,
-            k8s_namespace=os.environ['NAMESPACE']
+            k8s_namespace=os.getenv('NAMESPACE') or Variable.get('NAMESPACE')
         )
         if conn_id not in config_map.data:
             raise Exception("Doesn't have {} value in k8s secret".format(conn_id))
