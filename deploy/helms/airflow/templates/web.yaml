@@ -41,6 +41,10 @@ spec:
         {{- end }}
         - name: POSTGRES_PORT
           value: "{{ .Values.postgres.port }}"
+        - name: CLUSTER_NAME
+          value: "{{ .Values.clusterName }}"
+        - name: NAMESPACE
+          value: "{{ .Values.enclave }}"
         - name: REDIS_HOST
           value: "{{ .Release.Name }}-redis"
         - name: AIRFLOW_HOME
