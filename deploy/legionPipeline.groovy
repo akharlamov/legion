@@ -21,7 +21,7 @@ def createCluster() {
     file(credentialsId: "vault-${params.Profile}", variable: 'vault')]) {
         withAWS(credentials: 'kops') {
             wrap([$class: 'AnsiColorBuildWrapper', colorMapName: "xterm"]) {
-                docker.image("legion/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -u root") {
+                docker.image("${params.DockerRepo}/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -u root") {
                     stage('Create cluster') {
                         sh """
                         cd /opt/legion/deploy/ansible && ansible-playbook create-cluster.yml \
@@ -41,7 +41,7 @@ def terminateCluster() {
     file(credentialsId: "vault-${params.Profile}", variable: 'vault')]) {
         withAWS(credentials: 'kops') {
             wrap([$class: 'AnsiColorBuildWrapper', colorMapName: "xterm"]) {
-                docker.image("legion/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -u root") {
+                docker.image("${params.DockerRepo}/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -u root") {
                     stage('Create cluster') {
                         sh """
                         cd /opt/legion/deploy/ansible && ansible-playbook terminate-cluster.yml \
@@ -62,7 +62,7 @@ def deployLegion() {
         withAWS(credentials: 'kops') {
             wrap([$class: 'AnsiColorBuildWrapper', colorMapName: "xterm"]) {
                 if (params.PublicRelease){
-                    docker.image("legion/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -u root") {
+                    docker.image("${params.DockerRepo}/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -u root") {
                         stage('Deploy Legion') {
                             sh """
                             cd /opt/legion/deploy/ansible && ansible-playbook deploy-legion.yml \
@@ -75,7 +75,7 @@ def deployLegion() {
                         }
                     }
                 } else {
-                    docker.image("legion/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -u root") {
+                    docker.image("${params.DockerRepo}/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -u root") {
                         stage('Deploy Legion') {
                             sh """
                             cd /opt/legion/deploy/ansible && ansible-playbook deploy-legion.yml \
