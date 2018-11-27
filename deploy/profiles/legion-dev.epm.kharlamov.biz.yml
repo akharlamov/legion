@@ -55,7 +55,6 @@ k8s_master_zones:
 # Legion specific variables
 persistent_jenkins_volume: true
 certificate_email: legion@epam.com
-git_key: "/home/jenkins/deploy.cert"
 cert_dir: "/etc/dynssl"
 use_https: "yes"
 use_https_for_tests: "yes"
