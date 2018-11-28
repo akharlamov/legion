@@ -60,6 +60,8 @@ node {
             result = build job: params.TerminateClusterJobName, propagate: true, wait: true, parameters: [
                     [$class: 'GitParameterValue', name: 'GitBranch', value: params.GitBranch],
                     string(name: 'Profile', value: params.Profile),
+                    string(name: 'LegionVersion', value: legionVersion),
+                    string(name: 'DockerRepo', value: params.DockerRepo)
             ]
         }
 
@@ -67,7 +69,9 @@ node {
             result = build job: params.CreateClusterJobName, propagate: true, wait: true, parameters: [
                     [$class: 'GitParameterValue', name: 'GitBranch', value: params.GitBranch],
                     string(name: 'Profile', value: params.Profile),
-                    booleanParam(name: 'Skip_kops', value: false),
+                    string(name: 'LegionVersion', value: legionVersion),
+                    string(name: 'DockerRepo', value: params.DockerRepo),
+                    booleanParam(name: 'Skip_kops', value: false)
             ]
         }
 
@@ -76,10 +80,11 @@ node {
                     [$class: 'GitParameterValue', name: 'GitBranch', value: params.GitBranch],
                     string(name: 'Profile', value: params.Profile),
                     string(name: 'LegionVersion', value: legionVersion),
+                    string(name: 'DockerRepo', value: params.DockerRepo),
                     string(name: 'TestsTags', value: params.TestTags),
                     booleanParam(name: 'DeployLegion', value: true),
                     booleanParam(name: 'CreateJenkinsTests', value: true),
-                    booleanParam(name: 'UseRegressionTests', value: true),
+                    booleanParam(name: 'UseRegressionTests', value: true)
             ]
         }
 
@@ -88,6 +93,7 @@ node {
                     [$class: 'GitParameterValue', name: 'GitBranch', value: params.GitBranch],
                     string(name: 'Profile', value: params.Profile),
                     string(name: 'LegionVersion', value: legionVersion),
+                    string(name: 'DockerRepo', value: params.DockerRepo),
                     string(name: 'EnclaveName', value: 'enclave-ci')
             ]
         }
@@ -96,6 +102,8 @@ node {
             result = build job: params.TerminateLegionEnclaveJobName, propagate: true, wait: true, parameters: [
                     [$class: 'GitParameterValue', name: 'GitBranch', value: params.GitBranch],
                     string(name: 'Profile', value: params.Profile),
+                    string(name: 'LegionVersion', value: legionVersion),
+                    string(name: 'DockerRepo', value: params.DockerRepo),
                     string(name: 'EnclaveName', value: 'enclave-ci')
             ]
         }
@@ -110,6 +118,8 @@ node {
             result = build job: params.TerminateClusterJobName, propagate: true, wait: true, parameters: [
                     [$class: 'GitParameterValue', name: 'GitBranch', value: params.GitBranch],
                     string(name: 'Profile', value: params.Profile),
+                    string(name: 'LegionVersion', value: legionVersion),
+                    string(name: 'DockerRepo', value: params.DockerRepo)
             ]
         }
         legion.notifyBuild(currentBuild.result)
