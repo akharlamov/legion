@@ -463,6 +463,7 @@ EOL
                                 }
                                 sh """
                                 git reset --hard
+                                git checkout develop
                                 sed -i -E "s/__version__.*/__version__ = \'${nextVersion}\'/g" legion/legion/version.py
                                 git commit -a -m "Bump Legion version to ${nextVersion}" && git push origin develop
                                 """
@@ -476,7 +477,8 @@ EOL
                             if (params.UpdateMaster){
                                 sh """
                                 git reset --hard
-                                git co master && git pull -r origin master
+                                git checkout develop
+                                git checkout master && git pull -r origin master
                                 git pull -r origin develop
                                 git push origin master
                                 """
