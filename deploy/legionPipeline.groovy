@@ -63,29 +63,16 @@ def deployLegion() {
     file(credentialsId: "vault-${params.Profile}", variable: 'vault')]) {
         withAWS(credentials: 'kops') {
             wrap([$class: 'AnsiColorBuildWrapper', colorMapName: "xterm"]) {
-                if (params.PublicRelease){
-                    docker.image("${params.DockerRepo}/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -v ${WORKSPACE}/deploy/profiles:/opt/legion/deploy/profiles -u root") {
-                        stage('Deploy Legion') {
-                            sh """
-                            cd /opt/legion/deploy/ansible && ansible-playbook deploy-legion.yml \
-                            --vault-password-file=${vault} \
-                            --extra-vars "profile=${params.Profile} \
-                            legion_version=${params.LegionVersion} \
-                            pypi_repo=${params.PypiRepo} \
-                            docker_repo=${params.DockerRepo}"
-                            """
-                        }
-                    }
-                } else {
-                    docker.image("${params.DockerRepo}/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -v ${WORKSPACE}/deploy/profiles:/opt/legion/deploy/profiles -u root") {
-                        stage('Deploy Legion') {
-                            sh """
-                            cd /opt/legion/deploy/ansible && ansible-playbook deploy-legion.yml \
-                            --vault-password-file=${vault} \
-                            --extra-vars "profile=${params.Profile} \
-                            legion_version=${params.LegionVersion}"
-                            """
-                        }
+                docker.image("${params.DockerRepo}/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -v ${WORKSPACE}/deploy/profiles:/opt/legion/deploy/profiles -u root") {
+                    stage('Deploy Legion') {
+                        sh """
+                        cd /opt/legion/deploy/ansible && ansible-playbook deploy-legion.yml \
+                        --vault-password-file=${vault} \
+                        --extra-vars "profile=${params.Profile} \
+                        legion_version=${params.LegionVersion} \
+                        pypi_repo=${params.PypiRepo} \
+                        docker_repo=${params.DockerRepo}"
+                        """
                     }
                 }
             }
@@ -254,37 +241,21 @@ def runRobotTests(tags="") {
 }
 
 def deployLegionEnclave() {
-    dir('deploy/ansible'){
-        withCredentials([
-            file(credentialsId: "vault-${params.Profile}", variable: 'vault')]) {
-            withAWS(credentials: 'kops') {
-                wrap([$class: 'AnsiColorBuildWrapper', colorMapName: "xterm"]) {
-                    if (params.PublicRelease){
-                        docker.image("${params.DockerRepo}/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -v ${WORKSPACE}/deploy/profiles:/opt/legion/deploy/profiles -u root") {
-                            stage('Deploy Legion Enclave') {
-                                sh """
-                                cd /opt/legion/deploy/ansible && ansible-playbook deploy-legion-enclave.yml \
-                                --vault-password-file=${vault} \
-                                --extra-vars "profile=${params.Profile} \
-                                legion_version=${params.LegionVersion} \
-                                pypi_repo=${params.PypiRepo} \
-                                docker_repo=${params.DockerRepo} \
-                                enclave_name=${params.EnclaveName}"
-                                """
-                            }
-                        }
-                    } else {
-                        docker.image("${params.DockerRepo}/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -v ${WORKSPACE}/deploy/profiles:/opt/legion/deploy/profiles -u root") {
-                            stage('Deploy Legion Enclave') {
-                                sh """
-                                cd /opt/legion/deploy/ansible && ansible-playbook deploy-legion-enclave.yml \
-                                --vault-password-file=${vault} \
-                                --extra-vars "profile=${params.Profile} \
-                                legion_version=${params.LegionVersion} \
-                                enclave_name=${params.EnclaveName}"
-                                """
-                            }
-                        }
+    withCredentials([
+        file(credentialsId: "vault-${params.Profile}", variable: 'vault')]) {
+        withAWS(credentials: 'kops') {
+            wrap([$class: 'AnsiColorBuildWrapper', colorMapName: "xterm"]) {
+                docker.image("${params.DockerRepo}/k8s-ansible:${params.LegionVersion}").inside("-e HOME=/opt/deploy/legion -v ${WORKSPACE}/deploy/profiles:/opt/legion/deploy/profiles -u root") {
+                    stage('Deploy Legion') {
+                        sh """
+                        cd /opt/legion/deploy/ansible && ansible-playbook deploy-legion.yml \
+                        --vault-password-file=${vault} \
+                        --extra-vars "profile=${params.Profile} \
+                        legion_version=${params.LegionVersion} \
+                        pypi_repo=${params.PypiRepo} \
+                        docker_repo=${params.DockerRepo} \
+                        enclave_name=${params.EnclaveName}"
+                        """
                     }
                 }
             }
