@@ -3,11 +3,11 @@
 - name: Download TLS certificate from S3
   aws_s3:
     bucket: "{{ secrets_bucket }}"
-    object: "certificates/{{ profile }}.tar.gz"
+    object: "vault/certificates/{{ profile }}.tar.gz"
     dest: "{{ tls_cert_dir }}/{{ profile }}.tar.gz"
     mode: get
 
-- name: Extract certificates from archive
+- name: Extract certificates from the archive
   unarchive:
     src: "{{ tls_cert_dir }}/{{ profile }}.tar.gz"
     dest: "{{ tls_cert_dir }}"
@@ -22,5 +22,5 @@
 
 - name: Delete temp certificates files
   file:
-    name: "{{ tls_cert_dir }}"
+    path: "{{ tls_cert_dir }}"
     state: absent
