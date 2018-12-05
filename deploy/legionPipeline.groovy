@@ -91,7 +91,7 @@ def UpdateTLSCert() {
                     playbook: 'update-tls-certificate.yml',
                     extras: '--vault-password-file=${vault} \
                             --extra-vars "profile=${Profile} \
-                            vault_pass=${vault} \
+                            vault_pass=${vault}" ',
                     colorized: true
                     )
                 }
