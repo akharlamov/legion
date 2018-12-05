@@ -10,7 +10,7 @@
 
 - name: Save vault pass to a file
   copy:
-    content: "{{ ansible_vault_pass }}"
+    content: "{{ vault_pass }}"
     dest: "{{ tmp_dir }}/avpf"
 
 - name: Encrypt TLS crtificates archive
