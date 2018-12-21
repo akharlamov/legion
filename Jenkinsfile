@@ -48,6 +48,7 @@ pipeline {
             param_jenkins_plugins_repository_store = "${params.JenkinsPluginsRepositoryStore}"
             param_jenkins_plugins_repository = "${params.JenkinsPluginsRepository}"
             param_docker_registry = "${params.DockerRegistry}"
+            param_docker_hub_registry = "${params.DockerHubRegistry}"
             ///Job parameters
             localDocumentationStorage = "/www/docs/"
             infraBuildWorkspace = "${WORKSPACE}/k8s/k8s-infra"
@@ -308,7 +309,7 @@ EOL
             agent {
                 docker {
                     image "legion-docker-agent:${env.BUILD_NUMBER}"
-                    args "-v ${LocalDocumentationStorage}:${localDocumentationStorage}"
+                    args "-v ${localDocumentationStorage}:${localDocumentationStorage}"
                 }
             }
             steps {
@@ -448,7 +449,7 @@ EOL
                     agent {
                         docker {
                             image "legion-docker-agent:${env.BUILD_NUMBER}"
-                            args "-v ${LocalDocumentationStorage}:${LocalDocumentationStorage} -v /var/run/docker.sock:/var/run/docker.sock -u root --net host"
+                            args "-v ${localDocumentationStorage}:${localDocumentationStorage} -v /var/run/docker.sock:/var/run/docker.sock -u root --net host"
                         }
                     }
                     steps {
