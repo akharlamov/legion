@@ -143,7 +143,7 @@ pipeline {
         }
         stage('Build Agent Docker Image') {
             steps {
-                sh "docker build ${Globals.dockerCacheArg} -t legion-docker-agent:${env.BUILD_NUMBER} -f pipeline.Dockerfile ."
+                sh "docker build ${Globals.dockerCacheArg} -t legion-docker-agent:${env.BuildVersion} -f pipeline.Dockerfile ."
             }
         }
         stage('Build dependencies') {
@@ -190,7 +190,7 @@ pipeline {
                 stage('Run Python code analyzers') {
                     agent {
                         docker {
-                            image "legion-docker-agent:${env.BUILD_NUMBER}"
+                            image "legion-docker-agent:${env.BuildVersion}"
                         }
                     }
                     steps {
@@ -236,7 +236,7 @@ pipeline {
                 stage("Upload Legion package") {
                     agent {
                         docker {
-                            image "legion-docker-agent:${env.BUILD_NUMBER}"
+                            image "legion-docker-agent:${env.BuildVersion}"
                             args "-e HOME=/tmp"
                         }
                     }
@@ -307,7 +307,7 @@ EOL
         stage('Build docs') {
             agent {
                 docker {
-                    image "legion-docker-agent:${env.BUILD_NUMBER}"
+                    image "legion-docker-agent:${env.BuildVersion}"
                     args "-v ${LocalDocumentationStorage}:${localDocumentationStorage}"
                 }
             }
@@ -447,7 +447,7 @@ EOL
                 stage("Run Python tests") {
                     agent {
                         docker {
-                            image "legion-docker-agent:${env.BUILD_NUMBER}"
+                            image "legion-docker-agent:${env.BuildVersion}"
                             args "-v ${LocalDocumentationStorage}:${LocalDocumentationStorage} -v /var/run/docker.sock:/var/run/docker.sock -u root --net host"
                         }
                     }

@@ -51,12 +51,17 @@ pipeline {
         }
         
         stage('Create jenkins jobs') {
-            when {
-                expression { return param_create_jenkins_tests == "true" }
-            }
-            steps {
-                script {
-                    legion.createjenkinsJobs(commitID)
+            agent {
+                docker {
+                    image "legion-docker-agent:${env.BUILD_NUMBER}"
+                }
+                when {
+                        expression { return param_create_jenkins_tests == "true" }
+                }
+                steps {
+                    script {
+                        legion.createjenkinsJobs(commitID)
+                    }
                 }
             }
         }
