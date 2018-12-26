@@ -123,3 +123,7 @@ secrets_file: "/tmp/{{ cluster_name }}-secrets"
 # Dex
 dex:
   enabled: true
+
+model_docker_url: nexus-local.cc.epm.kharlamov.biz
+
+model_nexus_raw_url: https://nexus-local.cc.epm.kharlamov.biz/repository/raw-ci

@@ -19,8 +19,6 @@ legion k8s utils functions
 import os
 import logging
 
-import docker
-import docker.errors
 import kubernetes
 import kubernetes.client
 import kubernetes.config
@@ -161,7 +159,7 @@ def get_docker_image_labels(image):
     # Get nexus registry host from ENV or image url
     try:
         if image_attributes.host == os.getenv('MODEL_IMAGES_REGISTRY_HOST'):
-            registry_host = os.getenv(legion.config.NEXUS_DOCKER_REGISTRY[0])
+            registry_host = os.getenv(legion.config.DOCKER_REGISTRY[0])
         else:
             if urllib3.util.parse_url(image_attributes.host).port == 443:
                 registry_host = 'https://{}'.format(image_attributes.host)
@@ -183,7 +181,7 @@ def get_docker_image_labels(image):
             manifest[0]["history"][0]["v1Compatibility"])["container_config"]["Labels"]
 
     except Exception as err:
-        raise Exception('Can\'t get image labels for  {} image: {}'.format(image, err))
+        raise Exception('Can\'t get image labels for {} image: {}'.format(image, err))
 
     required_headers = [
         legion.containers.headers.DOMAIN_MODEL_ID,
@@ -253,7 +251,7 @@ def parse_docker_image_url(image_url):
     :type image_url: str
     :return: namedtuple[str, Any]
     """
-    image_attrs_regexp = '(.*)/([\w-]+/[\w\-]+):([\-\.\w]+)'
+    image_attrs_regexp = '(.*?)/([\w\-/]+):([\-\.\w]+)'
     try:
         image_attrs_list = re.search(image_attrs_regexp, image_url)
 

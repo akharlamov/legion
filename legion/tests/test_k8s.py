@@ -15,19 +15,19 @@
 #
 from __future__ import print_function
 
+import logging
 import os
 import os.path
 
-import unittest2
-import docker.errors
-import logging
-
-import legion.k8s
-import legion.k8s.utils
 import legion.config
 import legion.containers.docker
 import legion.containers.headers
+import legion.k8s
+import legion.k8s.utils
 import legion.utils
+import unittest2
+from legion.k8s.utils import ImageAttributes
+from legion.k8s.utils import parse_docker_image_url
 
 try:
     from .legion_test_utils import LegionTestContainer
@@ -162,6 +162,34 @@ class TestK8S(unittest2.TestCase):
         self.assertEqual(legion.containers.docker.get_docker_container_id_from_cgroup_line(
             '9:devices:/docker/54d998b5f4232277ef245f7d93b0156dec3e149186916c557190983863bc7f57'
         ), '54d998b5f4232277ef245f7d93b0156dec3e149186916c557190983863bc7f57')
+
+    def test_parse_docker_image_url(self):
+        image_attributes = parse_docker_image_url(
+            'nexus.cc.epm.kharlamov.biz/legion-test-null-test-summation:1.0-190115092855.1.56ed5f4')
+        self.assertEqual(ImageAttributes(
+            host='nexus.cc.epm.kharlamov.biz', repo='legion-test-null-test-summation', ref='1.0-190115092855.1.56ed5f4'
+        ), image_attributes)
+
+        image_attributes = parse_docker_image_url(
+            'nexus.cc.epm.kharlamov.biz:443/legion-test-null-test-summation:1.0-190115092855.1.56ed5f4')
+        self.assertEqual(ImageAttributes(
+            host='nexus.cc.epm.kharlamov.biz:443', repo='legion-test-null-test-summation',
+            ref='1.0-190115092855.1.56ed5f4'
+        ), image_attributes)
+
+        image_attributes = parse_docker_image_url(
+            'nexus.cc.epm.kharlamov.biz/legion/test-bare-model-api-model-6:0.10.0-20190115075121.273.56ed5f4')
+        self.assertEqual(ImageAttributes(
+            host='nexus.cc.epm.kharlamov.biz', repo='legion/test-bare-model-api-model-6',
+            ref='0.10.0-20190115075121.273.56ed5f4'
+        ), image_attributes)
+
+        image_attributes = parse_docker_image_url(
+            'nexus.cc.epm.kharlamov.biz:443/legion/test-bare-model-api-model-6:0.10.0-20190115075121.273.56ed5f4')
+        self.assertEqual(ImageAttributes(
+            host='nexus.cc.epm.kharlamov.biz:443', repo='legion/test-bare-model-api-model-6',
+            ref='0.10.0-20190115075121.273.56ed5f4'
+        ), image_attributes)
 
 
 if __name__ == '__main__':

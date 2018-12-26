@@ -337,9 +337,6 @@ Test model pipeline result
     Get token from EDI   ${enclave}   ${model_id}   ${model_version}
     ${model_info} =      Get model info       ${model_id}  ${model_version}  ${edge}  ${TOKEN}
     Log                  Model info is ${model_info}
-    ${model_url} =       Set Variable                       ${HOST_PROTOCOL}://nexus.${HOST_BASE_DOMAIN}/${model_path[0]}
-    Log                  External model URL is ${model_url}
-    Check remote file exists                                ${model_url}                  ${SERVICE_ACCOUNT}          jonny
     Connect to enclave Grafana                              ${enclave}
     Dashboard should exists                                 ${model_id}
     Sleep                15s
