@@ -246,7 +246,7 @@ pipeline {
                 stage("Upload Legion package") {
                     steps {
                         script {
-                            docker.image("legion/legion-docker-agent:${Globals.buildVersion}").inside("-u root") {
+                            docker.image("legion/legion-docker-agent:${Globals.buildVersion}").inside() {
                                 withCredentials([[
                                 $class: 'UsernamePasswordMultiBinding',
                                 credentialsId: 'nexus-local-repository',
@@ -265,9 +265,6 @@ EOL
 """
                                 }
                                 sh """
-                                ls -lsa /tmp
-                                echo 'pypirc'
-                                cat /tmp/.pypirc
                                 twine upload -r ${env.param_local_pypi_distribution_target_name} --config-file /tmp/.pypirc '/src/legion/dist/legion-${Globals.buildVersion}.*'
                                 twine upload -r ${env.param_local_pypi_distribution_target_name} --config-file /tmp/.pypirc '/src/legion_test/dist/legion_test-${Globals.buildVersion}.*'
                                 twine upload -r ${env.param_local_pypi_distribution_target_name} --config-file /tmp/.pypirc '/src/legion_airflow/dist/legion_airflow-${Globals.buildVersion}.*'
@@ -317,9 +314,6 @@ EOL
             steps {
                 script {
                     docker.image("legion/legion-docker-agent:${Globals.buildVersion}").inside(" -v ${localDocumentationStorage}:${localDocumentationStorage}") {
-                        fullBuildNumber = env.BUILD_NUMBER
-                        fullBuildNumber.padLeft(4, '0')
-
                         sh """
                         cd legion/docs
                         sphinx-apidoc -f --private -o source/ ../legion/ -V '${Globals.buildVersion}'
@@ -329,11 +323,14 @@ EOL
                         cd ../../
                         """
 
-                        sh "cd legion && cp -rf docs/build/html/ \"${localDocumentationStorage}/${Globals.buildVersion}/\""
+                        sh "tar -czf legion_docs_${Globals.buildVersion}.tar.gz legion/docs/build/html/"
+                        sh "pwd && ls -lsa"
+                        archiveArtifacts artifacts: "legion_docs_${Globals.buildVersion}.tar.gz"
                     }
                 }
             }
         }
+
         stage("Build and Upload Base Docker Image") {
             steps {
                 script {
@@ -345,13 +342,14 @@ EOL
                 }
             }
         }
-        stage("Build Ansible Docker image") {
-            steps {
-                sh "docker build ${Globals.dockerCacheArg} -t legion/k8s-ansible:${Globals.buildVersion} ${Globals.dockerLabels}  -f k8s/ansible/Dockerfile ."
-            }
-        }    
+
         stage("Build Docker images & Helms") {
             parallel {
+                stage("Build Ansible Docker image") {
+                    steps {
+                        sh "docker build ${Globals.dockerCacheArg} -t legion/k8s-ansible:${Globals.buildVersion} ${Globals.dockerLabels}  -f k8s/ansible/Dockerfile ."
+                    }
+                }  
                 stage("Build Grafana Docker image") {
                     steps {
                         sh """
@@ -360,7 +358,6 @@ EOL
                         """
                     }
                 }
-
                 stage("Build Edge Docker image") {
                     steps {
                         sh """
