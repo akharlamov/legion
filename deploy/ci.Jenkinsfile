@@ -162,6 +162,7 @@ pipeline {
                         [$class: 'GitParameterValue', name: 'GitBranch', value: env.param_git_branch],
                         string(name: 'LegionVersion', value: legionVersion),
                         string(name: 'Profile', value: env.param_profile)]
+                legion.cleanupClusterSg()
                 legion.notifyBuild(currentBuild.currentResult)
             }
             deleteDir()
