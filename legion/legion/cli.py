@@ -1,5 +1,5 @@
 #
-#    Copyright 2017 EPAM Systems
+#    Copyright 2018 EPAM Systems
 #
 #    Licensed under the Apache License, Version 2.0 (the "License");
 #    you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
 #    limitations under the License.
 #
 """
-Deploy logic for legion
+CLI logic for legion
 """
 
 import logging
 import os
+import stat
 import time
 
 import legion.config
@@ -30,6 +31,7 @@ import legion.external.grafana
 import legion.pymodel
 import legion.model
 import legion.utils
+import legion.template
 from legion.utils import Colors, ExternalFileReader
 
 LOGGER = logging.getLogger(__name__)
@@ -49,27 +51,43 @@ def build_model(args):
     """
     client = legion.containers.docker.build_docker_client(args)
 
-    with ExternalFileReader(args.model_file) as external_reader:
+    model_file = args.model_file
+    if not model_file:
+        model_file = os.getenv(legion.config.MODEL_FILE[0])
+
+    if not model_file:
+        raise Exception('Model file has not been provided')
+
+    with ExternalFileReader(model_file) as external_reader:
         if not os.path.exists(external_reader.path):
             raise Exception('Cannot find model binary {}'.format(external_reader.path))
 
         container = legion.pymodel.Model.load(external_reader.path)
         model_id = container.model_id
+        model_version = container.model_version
 
         image_labels = legion.containers.docker.generate_docker_labels_for_image(external_reader.path, model_id, args)
 
         LOGGER.info('Building docker image...')
+
+        new_image_tag = args.docker_image_tag
+        if not new_image_tag:
+            new_image_tag = 'legion-model-{}:{}.{}'.format(model_id, model_version, legion.utils.deduce_extra_version())
+
         image = legion.containers.docker.build_docker_image(
             client,
             model_id,
             external_reader.path,
             image_labels,
-            args.docker_image_tag
+            new_image_tag
         )
 
         LOGGER.info('Image has been built: {}'.format(image))
 
-        legion.utils.send_header_to_stderr(legion.containers.headers.IMAGE_TAG_LOCAL, image.id)
+        legion.utils.send_header_to_stderr(legion.containers.headers.IMAGE_ID_LOCAL, image.id)
+
+        if image.tags:
+            legion.utils.send_header_to_stderr(legion.containers.headers.IMAGE_TAG_LOCAL, image.tags[0])
 
         if args.push_to_registry:
             legion.containers.docker.push_image_to_registry(client, image, args.push_to_registry)
@@ -301,3 +319,45 @@ def deploy_kubernetes(args):
                           lambda affected_deployments_status: check_all_scaled(affected_deployments_status,
                                                                                args.scale,
                                                                                len(model_deployments)))
+
+
+def sandbox(args):
+    """
+    Create local sandbox
+    It generates bash script to run sandbox
+
+
+    :param args: command arguments with .image, .force_recreate
+    :type args: :py:class:`argparse.Namespace`
+    :return: None
+    """
+    work_directory = '/work-directory'
+
+    local_fs_work_directory = os.path.abspath(os.getcwd())
+
+    legion_data_directory = '/opt/legion/'
+    model_file = 'model.bin'
+
+    arguments = dict(
+        local_fs=local_fs_work_directory,
+        image=args.image,
+        work_directory=work_directory,
+        legion_data_directory=legion_data_directory,
+        model_file=model_file
+    )
+    cmd = legion.utils.render_template('sandbox-cli.sh.tmpl', arguments)
+
+    path_to_activate = os.path.abspath(os.path.join(os.getcwd(), 'legion-activate.sh'))
+
+    if os.path.exists(path_to_activate) and not args.force_recreate:
+        print('File {} already existed, ignoring creation of sandbox'.format(path_to_activate))
+        return
+
+    with open(path_to_activate, 'w') as activate_file:
+        activate_file.write(cmd)
+
+    current_mode = os.stat(path_to_activate)
+    os.chmod(path_to_activate, current_mode.st_mode | stat.S_IEXEC)
+
+    print('Sandbox has been created!')
+    print('To activate run {!r} from command line'.format(path_to_activate))

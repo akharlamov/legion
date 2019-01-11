@@ -582,7 +582,7 @@ class ModelDockerBuilderContainerContext:
         :type binary_model_file: str
         :return: tuple[str, str] -- Docker image sha, output of execution
         """
-        command = 'legionctl build "{}"'.format(binary_model_file)
+        command = 'legionctl build --model-file "{}"'.format(binary_model_file)
         output = self.exec(command, workdir=self.workspace)
 
         tag = None
@@ -591,7 +591,7 @@ class ModelDockerBuilderContainerContext:
             if line.startswith(legion.containers.headers.STDERR_PREFIX):
                 line = line[len(legion.containers.headers.STDERR_PREFIX):]
                 header, value = line.split(':', maxsplit=1)
-                if header == legion.containers.headers.IMAGE_TAG_LOCAL:
+                if header == legion.containers.headers.IMAGE_ID_LOCAL:
                     _, tag = value.split(':')
 
         return tag, output

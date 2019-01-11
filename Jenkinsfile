@@ -351,7 +351,7 @@ EOL
             steps {
                 sh "docker build ${Globals.dockerCacheArg} -t legion/k8s-ansible:${Globals.buildVersion} ${Globals.dockerLabels}  -f k8s/ansible/Dockerfile ."
             }
-        }    
+        }
         stage("Build Docker images & Helms") {
             parallel {
                 stage("Build Grafana Docker image") {
@@ -396,6 +396,14 @@ EOL
                         sh """
                         cd k8s/edi
                         docker build ${Globals.dockerCacheArg} --build-arg version="${Globals.buildVersion}" --build-arg pip_extra_index_params="--extra-index-url ${env.param_pypi_repository}" --build-arg pip_legion_version_string="==${Globals.buildVersion}" -t legion/k8s-edi:${Globals.buildVersion} ${Globals.dockerLabels} .
+                        """
+                    }
+                }
+                stage("Build Python Toolchain") {
+                    steps {
+                        sh """
+                        cd k8s/toolchains/python
+                        docker build ${Globals.dockerCacheArg} --build-arg version="${Globals.buildVersion}" --build-arg pip_extra_index_params="--extra-index-url ${env.param_pypi_repository}" --build-arg pip_legion_version_string="==${Globals.buildVersion}" -t legion/python-toolchain:${Globals.buildVersion} ${Globals.dockerLabels} .
                         """
                     }
                 }
@@ -539,6 +547,13 @@ EOL
                     steps {
                         script {
                             legion.uploadDockerImage('k8s-edi', "${Globals.buildVersion}")
+                        }
+                    }
+                }
+                stage('Upload Python Toolchain image') {
+                    steps {
+                        script {
+                            legion.uploadDockerImage('python-toolchain', "${Globals.buildVersion}")
                         }
                     }
                 }

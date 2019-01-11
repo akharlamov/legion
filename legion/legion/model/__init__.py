@@ -16,6 +16,8 @@
 """
 Model functionality
 """
+import legion.docker_bootup
+
 from .client import ModelClient, load_image
 from .types import int8, uint8, int16, uint16, int32, uint32, int64, uint64
 from .types import float32, float64

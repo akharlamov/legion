@@ -52,11 +52,17 @@ class TestMetrics(unittest2.TestCase):
         timestamp = time.time()
         host, port, namespace = metrics.get_metric_endpoint()
 
-        with patch_environ({env.BUILD_NUMBER[0]: build_number}):
+        additional_environment = {
+            env.BUILD_NUMBER[0]: build_number,
+            legion.config.MODEL_TRAIN_METRICS_ENABLED[0]: 'true'
+        }
+
+        with patch_environ(additional_environment):
             with patch('legion.metrics.send_tcp') as send_tcp_mock, patch('time.time', return_value=timestamp):
+                timestamp = int(time.time())
                 metrics.send_metric(model_id, metric, value)
 
-                self.assertTrue(len(send_tcp_mock.call_args_list) == 2, '2 calls founded')
+                self.assertTrue(len(send_tcp_mock.call_args_list) == 2, '2 calls have not been founded')
                 for call in send_tcp_mock.call_args_list:
                     self.assertEqual(call[0][0], host)
                     self.assertEqual(call[0][1], port)
@@ -74,11 +80,32 @@ class TestMetrics(unittest2.TestCase):
                 self.assertEqual(int(float(call_with_build_number[1])), build_number)
                 self.assertEqual(call_with_build_number[2], str(int(timestamp)))
 
+    def test_metrics_send_disabled(self):
+        model_id = 'demo'
+        build_number = 10
+        metric = metrics.Metric.TEST_ACCURACY
+        value = 30.0
+        host, port, namespace = metrics.get_metric_endpoint()
+
+        additional_environment = {
+            env.BUILD_NUMBER[0]: build_number,
+            legion.config.MODEL_TRAIN_METRICS_ENABLED[0]: 'false'
+        }
+        with patch_environ(additional_environment):
+            with patch('legion.metrics.send_tcp') as send_tcp_mock:
+                metrics.send_metric(model_id, metric, value)
+
+                self.assertTrue(len(send_tcp_mock.call_args_list) == 0, '0 calls have not been founded')
+
     def test_default_endpoint_detection(self):
         host, port, namespace = metrics.get_metric_endpoint()
         self.assertEqual(host, env.GRAPHITE_HOST[1])
         self.assertEqual(port, env.GRAPHITE_PORT[1])
         self.assertEqual(namespace, env.GRAPHITE_NAMESPACE[1])
+
+    def test_default_is_metrics_enabled(self):
+        is_enabled = metrics.is_metrics_enabled()
+        self.assertEqual(is_enabled, env.MODEL_TRAIN_METRICS_ENABLED[1])
 
     def test_custom_endpoint_detection(self):
         new_host = 'localhost'
@@ -88,7 +115,8 @@ class TestMetrics(unittest2.TestCase):
         additional_environment = {
             legion.config.GRAPHITE_HOST[0]: new_host,
             legion.config.GRAPHITE_PORT[0]: str(new_port),
-            legion.config.GRAPHITE_NAMESPACE[0]: new_namespace
+            legion.config.GRAPHITE_NAMESPACE[0]: new_namespace,
+            legion.config.MODEL_TRAIN_METRICS_ENABLED[0]: 'true'
         }
         with patch_environ(additional_environment):
             host, port, namespace = metrics.get_metric_endpoint()

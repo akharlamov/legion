@@ -23,8 +23,8 @@ import legion.docker_bootup
 from legion.edi.security import login, add_edi_arguments
 from legion.serving.pyserve import serve_model
 from legion.external.edi import add_arguments_for_wait_operation
-from legion.edi.deploy import \
-    build_model, \
+from legion.cli import \
+    build_model, sandbox, \
     deploy_kubernetes, undeploy_kubernetes, scale_kubernetes, inspect_kubernetes, \
     VALID_INSPECT_FORMATS
 import legion.utils
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     # --------- LOCAL DOCKER SECTION -----------
     build_parser = subparsers.add_parser('build', description='build model into new docker image (should be run '
                                                               'in the docker container)')
-    build_parser.add_argument('model_file',
+    build_parser.add_argument('--model-file',
                               type=str, help='serialized model file name')
     build_parser.add_argument('--docker-image-tag',
                               type=str, help='docker image tag')
@@ -144,6 +144,18 @@ if __name__ == '__main__':
                                 type=legion.utils.string_to_bool)
     pyserve_parser.set_defaults(func=serve_model)
 
+    # --------- LOCAL SECTION -----------
+    sandbox_parser = subparsers.add_parser('create-sandbox', description='create sandbox')
+    sandbox_parser.add_argument('--image',
+                                type=str,
+                                default=os.getenv('LEGION_TOOLCHAIN',
+                                                  'legionplatform/python-toolchain:' + legion.__version__),
+                                help='explicitly set toolchain python image')
+    sandbox_parser.add_argument('--force-recreate',
+                                action='store_true',
+                                help='recreate sandbox if it already existed')
+    sandbox_parser.set_defaults(func=sandbox)
+
     # --------- UTILS SECTION -----------
     list_dependencies_parser = subparsers.add_parser('list-dependencies', description='list package dependencies')
     list_dependencies_parser.set_defaults(func=list_dependencies)
@@ -158,7 +170,7 @@ if __name__ == '__main__':
     else:
         log_level = logging.ERROR
 
-    logging.basicConfig(level=log_level, 
+    logging.basicConfig(level=log_level,
                         format='%(asctime)s - %(levelname)s - %(message)s',
                         stream=sys.stderr)
 

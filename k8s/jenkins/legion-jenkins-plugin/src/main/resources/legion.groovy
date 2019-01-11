@@ -79,7 +79,7 @@ def pod(Map podParams=null, Closure body) {
             "LEGION_BASE_IMAGE_REPOSITORY",
             "EXTERNAL_RESOURCE_PROTOCOL", "EXTERNAL_RESOURCE_HOST", "EXTERNAL_RESOURCE_USER", "EXTERNAL_RESOURCE_PASSWORD",
             "MODEL_IMAGES_REGISTRY", "MODEL_IMAGES_REGISTRY_HOST", "DOCKER_REGISTRY_USER", "DOCKER_REGISTRY_PASSWORD",
-            "GRAPHITE_HOST", "STATSD_HOST", "STATSD_PORT",
+            "GRAPHITE_HOST", "STATSD_HOST", "STATSD_PORT", "MODEL_TRAIN_METRICS_ENABLED",
             "AIRFLOW_S3_URL", "AIRFLOW_REST_API", "AIRFLOW_DAGS_DIRECTORY", "DAGS_VOLUME_PVC", "S3_BUCKET_NAME"
     ]
 
@@ -220,7 +220,7 @@ def build() {
     legionctl build  \
     --docker-image-tag ${env.TEMPORARY_DOCKER_IMAGE_NAME} \
     --push-to-registry  ${env.EXTERNAL_IMAGE_NAME} \
-    ${env.MODEL_FILE_NAME}
+    --model-file ${env.MODEL_FILE_NAME}
     """
 
 }

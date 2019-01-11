@@ -369,7 +369,14 @@ class Model:
 
         file_name_has_been_deduced = False
         if not self._path:
-            self._path = deduce_model_file_name(self.model_id, self.model_version)
+            file_name_from_env = os.environ.get(legion.config.MODEL_FILE[0], None)
+            if file_name_from_env:
+                LOGGER.debug('Got target file name from ENV: {!r}'.format(file_name_from_env))
+                self._path = file_name_from_env
+            else:
+                LOGGER.debug('Deducing target file name for model id={!r} version={!r}'
+                             .format(self.model_id, self.model_version))
+                self._path = deduce_model_file_name(self.model_id, self.model_version)
 
         LOGGER.info('Saving model to {}'.format(self._path))
 

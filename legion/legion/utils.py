@@ -573,7 +573,7 @@ def get_list_of_requirements():
     """
     file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data', 'Pipfile.lock')
     if not os.path.exists(file_path):
-        raise Exception('File with requirements ({}) is not exists', file_path)
+        raise Exception(f'File with requirements ({file_path}) is not exists')
 
     with open(file_path, 'r') as file_stream:
         file_data = json.load(file_stream)
@@ -598,15 +598,11 @@ def get_installed_packages():
     ], key=lambda item: item[0])
 
 
-def deduce_model_file_name(model_id, model_version):
+def deduce_extra_version():
     """
-    Get model file name
+    Deduce extra version based on date, user, commit
 
-    :param model_id: ID of model
-    :type model_id: str
-    :param model_version: version of model
-    :type model_version: str
-    :return: str -- auto deduced file name
+    :return: str -- extra version string
     """
     date_string = datetime.datetime.now().strftime('%y%m%d%H%M%S')
 
@@ -617,7 +613,20 @@ def deduce_model_file_name(model_id, model_version):
     if not commit_id:
         commit_id = '0000'
 
-    file_name = '%s-%s+%s.%s.%s.model' % (model_id, str(model_version), date_string, user_id, commit_id)
+    return '.'.join([date_string, user_id, commit_id])
+
+
+def deduce_model_file_name(model_id, model_version):
+    """
+    Get model file name
+
+    :param model_id: ID of model
+    :type model_id: str
+    :param model_version: version of model
+    :type model_version: str
+    :return: str -- auto deduced file name
+    """
+    file_name = '%s-%s+%s.model' % (model_id, str(model_version), deduce_extra_version())
 
     if string_to_bool(os.getenv(*legion.config.EXTERNAL_RESOURCE_USE_BY_DEFAULT)):
         return '///%s' % file_name

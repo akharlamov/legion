@@ -16,6 +16,7 @@
 keys/
 cover/
 
+activate.sh
 legion/legion/data/Pipfile.lock
 
 test.model

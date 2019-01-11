@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+docker run -ti --rm \
+   --net=host \
+   -e "PYDEVD_HOST=$PYDEVD_HOST" \
+   -e "PYDEVD_PORT=$PYDEVD_PORT" \
+   -e "PTVSD_PORT=$PTVSD_PORT" \
+   -e "PTVSD_HOST=$PTVSD_HOST" \
+   -e "PTVSD_WAIT_ATTACH=$PTVSD_WAIT_ATTACH" \
+   -e "MODEL_FILE={{ legion_data_directory }}{{ model_file }}" \
+   -v {{ local_fs }}:{{ work_directory }} \
+   -v /var/run/docker.sock:/var/run/docker.sock \
+   {{ image }} \
+   sh -c "mkdir -p {{ legion_data_directory }} && cd {{ work_directory }} && bash"

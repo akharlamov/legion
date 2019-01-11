@@ -18,11 +18,15 @@ Model metrics
 """
 import os
 import socket
+import logging
 import time
 from enum import Enum
 
 import legion.config
-from legion.utils import normalize_name
+from legion.utils import normalize_name, string_to_bool
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Metric(Enum):
@@ -33,6 +37,15 @@ class Metric(Enum):
     TRAINING_ACCURACY = 'training-accuracy'
     TEST_ACCURACY = 'test-accuracy'
     TRAINING_LOSS = 'training-loss'
+
+
+def is_metrics_enabled():
+    """
+    Get is sending of metrics is enabled
+
+    :return: bool -- is sending of metrics is enabled or not
+    """
+    return string_to_bool(os.getenv(*legion.config.MODEL_TRAIN_METRICS_ENABLED))
 
 
 def get_metric_endpoint():
@@ -138,6 +151,10 @@ def send_metric(model_id, metric, value):
     :type value: float or int
     :return: None
     """
+    if not is_metrics_enabled():
+        LOGGER.warning('Sending of metric {!r} with value {!r} has been ignored'.format(metric, value))
+        return
+
     host, port, namespace = get_metric_endpoint()
 
     metric_name = '%s.%s' % (namespace, get_metric_name(metric, model_id))
