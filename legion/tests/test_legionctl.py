@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 import urllib3
 from legion.edi import security
-from legion.edi.deploy import build_model
+from legion.cli import build_model
 
 
 class TestBuildModel(unittest.TestCase):
