@@ -24,7 +24,7 @@ You may override default parameters using CLI arguments or environment variables
 
 Should be compatible with Legion Platform. By default Legion Platform provides **legionplatform/python-toolchain** public image. Also can be set using `LEGION_TOOLCHAIN` environment variable.
 
-Example of value: `docker-registry-host:900/legion/base-python-image:0.9.1`
+Example of value: `docker-registry-host:900/legion/python-toolchain:1.0.0`
 
 3. Activate Legion environment (go inside docker container)
 
