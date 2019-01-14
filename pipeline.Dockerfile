@@ -2,7 +2,8 @@ FROM python:3.6
 
 RUN apt-get update && apt-get install -y software-properties-common \
 	&& apt-get install -y build-essential libssl-dev libffi-dev zlib1g-dev libjpeg-dev git  \
-  jq=1.5+dfsg-1.3 xvfb=2:1.19.2-1+deb9u5 firefox-esr=60.4.0esr-1~deb9u1 \
+  jq=1.5+dfsg-1.3 xvfb=2:1.19.2-1+deb9u5 \
+  firefox-esr=60.4.0esr-1~deb9u1 \
 	&& apt-get clean all
 
 RUN pip install --disable-pip-version-check --upgrade pip==18.1 pipenv==2018.10.13
@@ -16,10 +17,9 @@ RUN mkdir /opt/firefox && \
     rm -rf /tmp/firefox.tar.bz2
     
 # Install Geckodriver for selenium tests
-ENV GECKO_VERSION=0.18.0
+ENV GECKO_VERSION=0.23.0
 ADD https://github.com/mozilla/geckodriver/releases/download/v${GECKO_VERSION}/geckodriver-v${GECKO_VERSION}-linux64.tar.gz /tmp/geckodriver.tar.gz
-RUN tar xzf /tmp/geckodriver.tar.gz -C /tmp/ && \
-    mv /tmp/geckodriver /usr/local/bin/geckodriver && \
+RUN tar xzf /tmp/geckodriver.tar.gz -C /usr/local/bin/ && \
     rm -rf /tmp/geckodriver*
 RUN chmod a+x /usr/local/bin/geckodriver
 
