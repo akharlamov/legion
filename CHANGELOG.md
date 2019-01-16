@@ -4,6 +4,8 @@
 - Model HTTP API request & response logging [\#624](https://github.com/legion-platform/legion/issues/624)
 - Create CI build pipeline for cluster infrastructure components to produce set of deliverable infrastructure units  [\#566](https://github.com/legion-platform/legion/issues/566)
 - Add tests for incorrect legionctl usage [\#367](https://github.com/legion-platform/legion/issues/367)
+- Deploy ansible and helm from sources [\#682](https://github.com/legion-platform/legion/issues/682)
+- Add EDI authentication authorization in legionctl [\#313](https://github.com/legion-platform/legion/issues/313)
 
 ### Changed
 - Update changelog file for 0.10.0 [\#679](https://github.com/legion-platform/legion/issues/679)
@@ -17,6 +19,10 @@
 - Speed up CI cycle [\#375](https://github.com/legion-platform/legion/issues/375)
 - Remove nginx from the model image [\#101](https://github.com/legion-platform/legion/issues/101)
 - Remove file\_change\_monitor plugin of legion-template [\#667](https://github.com/legion-platform/legion/issues/667)
+- Review and clean up the robot test tags [\#715](https://github.com/legion-platform/legion/issues/715)
+- Remove supervisord and nginx from EDI instance [\#709](https://github.com/legion-platform/legion/issues/709)
+- Remove documentation from EDGE [\#721](https://github.com/legion-platform/legion/issues/721)
+- Store model metrics separately for each endpoint [\#263](https://github.com/legion-platform/legion/issues/263)
 
 ### Fixed
 - Param param_update_version_string is missed in Release CI stage [\#706](https://github.com/legion-platform/legion/issues/706)
@@ -35,12 +41,25 @@
 - SSL check doesn't pass on kubeapi ELB [\#647](https://github.com/legion-platform/legion/issues/647)
 - Check airflow test dags failed: no explicit wait for the end of their work [\#641](https://github.com/legion-platform/legion/issues/641)
 - Nexus unstable test:  StaleElementReferenceException  [\#626](https://github.com/legion-platform/legion/issues/626)
+- Stabilize CI builds [\#714](https://github.com/legion-platform/legion/issues/714):
+    - Stabilization of airflow tests [\#735](https://github.com/legion-platform/legion/pull/735)
+    - Fixed filters and model deploy [\#724](https://github.com/legion-platform/legion/pull/724)
+    - Mock time.time func [\#728](https://github.com/legion-platform/legion/pull/728)
+    - Decrease number of requests to grafana and increase cpu [\#729](https://github.com/legion-platform/legion/pull/729)
+- Latest Graphite version is incorrect [\#733](https://github.com/legion-platform/legion/issues/733)
+- Lua generates same UUID for two requests [\#710](https://github.com/legion-platform/legion/issues/710)
+- Fix build and deploy pipeline [\#700](https://github.com/legion-platform/legion/issues/700)
+- Add missed CI post stage [\#697](https://github.com/legion-platform/legion/issues/697)
+- Cleanup script incorrectly handles response codes [\#717](https://github.com/legion-platform/legion/issues/717)
 
 ### Security
 - Potential security vulnerabilities with "urllib3" Python package [\#658](https://github.com/legion-platform/legion/issues/658)
 - Update Kubernetes to 1.10.11 due to CVE-2018-1002105 [\#642](https://github.com/legion-platform/legion/issues/642)
 - Generate API token per model [\#563](https://github.com/legion-platform/legion/issues/563)
 - Add Authentication for feedback API [\#635](https://github.com/legion-platform/legion/issues/635)
+- Add Authentication for EDI service [\#705](https://github.com/legion-platform/legion/pull/705)
+- Secure access to all Legion components in k8s cluster [\#327](https://github.com/legion-platform/legion/issues/327)
+- Make JWT tokens per-enclave [\#637](https://github.com/legion-platform/legion/issues/637)
 
 
 ## [0.9.0](https://github.com/legion-platform/legion/tree/0.9.0) (2018-12-03)
