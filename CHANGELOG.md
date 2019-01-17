@@ -23,6 +23,7 @@
 - Remove supervisord and nginx from EDI instance [\#709](https://github.com/legion-platform/legion/issues/709)
 - Remove documentation from EDGE [\#721](https://github.com/legion-platform/legion/issues/721)
 - Store model metrics separately for each endpoint [\#263](https://github.com/legion-platform/legion/issues/263)
+- Remove unstable UI test for Nexus deprecated [\#741](https://github.com/legion-platform/legion/issues/741)
 
 ### Fixed
 - Param param_update_version_string is missed in Release CI stage [\#706](https://github.com/legion-platform/legion/issues/706)
@@ -52,6 +53,7 @@
 - Cleanup script incorrectly handles response codes [\#717](https://github.com/legion-platform/legion/issues/717)
 - Installing of git pre-commit hooks hangs on Mac [\#738](https://github.com/legion-platform/legion/issues/738)
 - Apps tests don't launch the "6_incorrect_legionctl_commands" test suite [\#693](https://github.com/legion-platform/legion/issues/693)
+- Remove cheaping in uWSGI [\#740](https://github.com/legion-platform/legion/issues/740)
 
 ### Security
 - Potential security vulnerabilities with "urllib3" Python package [\#658](https://github.com/legion-platform/legion/issues/658)
