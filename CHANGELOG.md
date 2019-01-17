@@ -1,4 +1,4 @@
-## [0.10.0](https://github.com/legion-platform/legion/tree/0.10.0) (2018-12-27)
+## [0.10.0](https://github.com/legion-platform/legion/tree/0.10.0) (2019-01-18)
 
 ### Added
 - Model HTTP API request & response logging [\#624](https://github.com/legion-platform/legion/issues/624)
@@ -51,6 +51,8 @@
 - Fix build and deploy pipeline [\#700](https://github.com/legion-platform/legion/issues/700)
 - Add missed CI post stage [\#697](https://github.com/legion-platform/legion/issues/697)
 - Cleanup script incorrectly handles response codes [\#717](https://github.com/legion-platform/legion/issues/717)
+- Installing of git pre-commit hooks hangs on Mac [\#738](https://github.com/legion-platform/legion/issues/738)
+- Apps tests don't launch the "6_incorrect_legionctl_commands" test suite [\#693](https://github.com/legion-platform/legion/issues/693)
 
 ### Security
 - Potential security vulnerabilities with "urllib3" Python package [\#658](https://github.com/legion-platform/legion/issues/658)
@@ -60,6 +62,7 @@
 - Add Authentication for EDI service [\#705](https://github.com/legion-platform/legion/pull/705)
 - Secure access to all Legion components in k8s cluster [\#327](https://github.com/legion-platform/legion/issues/327)
 - Make JWT tokens per-enclave [\#637](https://github.com/legion-platform/legion/issues/637)
+- Move LetsEncrypt certificates to S3 secrets storage [\#636](https://github.com/legion-platform/legion/issues/636)
 
 
 ## [0.9.0](https://github.com/legion-platform/legion/tree/0.9.0) (2018-12-03)
