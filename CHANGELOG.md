@@ -48,7 +48,6 @@
     - Decrease number of requests to grafana and increase cpu [\#729](https://github.com/legion-platform/legion/pull/729)
 - Latest Graphite version is incorrect [\#733](https://github.com/legion-platform/legion/issues/733)
 - Lua generates same UUID for two requests [\#710](https://github.com/legion-platform/legion/issues/710)
-- Fix build and deploy pipeline [\#700](https://github.com/legion-platform/legion/issues/700)
 - Add missed CI post stage [\#697](https://github.com/legion-platform/legion/issues/697)
 - Cleanup script incorrectly handles response codes [\#717](https://github.com/legion-platform/legion/issues/717)
 - Installing of git pre-commit hooks hangs on Mac [\#738](https://github.com/legion-platform/legion/issues/738)
