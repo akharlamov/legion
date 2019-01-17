@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: prometheus-pushgateway-sm
+  namespace: kube-system
+  labels:
+    app: prometheus-pushgateway
+    prometheus: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: prometheus-pushgateway
+  namespaceSelector:
+    matchNames:
+    - kube-system
+    - default
+    - company-a
+  endpoints:
+    - port: http
+      interval: 10s
+      honorLabels: true
