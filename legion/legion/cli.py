@@ -395,11 +395,12 @@ def configure_logging(args):
                         format='%(asctime)s - %(levelname)s - %(message)s',
                         stream=sys.stderr)
 
+
 def build_parser():
     """
     Build parser for CLI
 
-    :return: :py:class:`argparse.ArgumentParser` -- CLI parser for LegionCTL
+    :return: (:py:class:`argparse.ArgumentParser`, py:class:`argparse._SubParsersAction`)  -- CLI parser for LegionCTL
     """
     parser = argparse.ArgumentParser(description='legion Command-Line Interface')
     parser.add_argument('--verbose',
@@ -531,4 +532,4 @@ def build_parser():
 
     # --------- END OF SECTIONS -----------
 
-    return parser
+    return parser, subparsers

@@ -9,6 +9,7 @@ import tarfile
 import io
 import json
 import glob
+import pty
 import subprocess
 from unittest.mock import patch
 import importlib
@@ -323,6 +324,88 @@ class LegionTestContainer:
             except Exception as removing_exception:
                 LOGGER.exception('Can\'t remove container: {}'.format(removing_exception),
                                  exc_info=removing_exception)
+
+
+class ManagedProcessContext:
+    """
+    Context manager for start and control process with stdout / stderr as a file streams
+    """
+
+    def __init__(self, *args, streams_location=None, **kwargs):
+        self._streams_location = streams_location
+        self._process = None
+
+        self._args = args
+        self._kwargs = kwargs
+
+        self._read_stdout_callback = None
+        self._read_stderr_callback = None
+
+        self._pty_master, self._pty_slave = None, None
+
+    def _prepare_stream(self, stream_name, args_holder):
+        if stream_name not in self._kwargs:
+            stream_folder = self._streams_location
+            if not stream_folder:
+                stream_folder = os.getcwd()
+            stream_file = os.path.join(stream_folder, stream_name)
+
+            if os.path.exists(stream_file):
+                print('Overwritting file {!r}'.format(stream_name))
+
+            stream = open(stream_file, 'w')
+            args_holder[stream_name] = stream
+
+            def read_callback():
+                with open(stream_file, 'r') as read_stream:
+                    return read_stream.read()
+
+            setattr(self, '_read_{}_callback'.format(stream_name), read_callback)
+
+    def _start_process(self):
+        args = self._args[:]
+        kwargs = self._kwargs.copy()
+
+        self._prepare_stream('stdout', kwargs)
+        self._prepare_stream('stderr', kwargs)
+        if 'stdin' not in kwargs:
+            self._pty_master, self._pty_slave = pty.openpty()
+            kwargs['stdin'] = self._pty_slave
+            kwargs['preexec_fn'] = os.setsid
+            kwargs['close_fds'] = True
+
+        self._process = subprocess.Popen(*args, **kwargs)
+        if self._pty_slave:
+            os.close(self._pty_slave)
+
+    @property
+    def process(self):
+        return self._process
+
+    @property
+    def stdout(self):
+        if self._read_stdout_callback:
+            return self._read_stdout_callback()
+
+        return self.process.stdout
+
+    @property
+    def stderr(self):
+        if self._read_stderr_callback:
+            return self._read_stderr_callback()
+
+        return self.process.stderr
+
+    def write_to_stdin(self, message):
+        pass
+
+    def __enter__(self):
+        self._start_process()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.process:
+            self.process.kill()
 
 
 def print_docker_container_logs(container):

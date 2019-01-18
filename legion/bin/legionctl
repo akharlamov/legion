@@ -22,7 +22,7 @@ import legion.utils
 
 
 if __name__ == '__main__':
-    parser = build_parser()
+    parser, _ = build_parser()
     args = parser.parse_args(sys.argv[1:])
 
     v = vars(args)
