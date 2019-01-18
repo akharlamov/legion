@@ -352,10 +352,12 @@ def is_environ_should_be_passed(environ_name):
     return environ_name.startswith('PYDEVD_') or environ_name == 'VERBOSE'
 
 
-def build_environ_for_test_environments():
+def build_environ_for_test_environments(for_building_env=False):
     """
     Build dict with environ variables that can be used in tests
 
+    :param for_building_env: (Optional) for building containers
+    :type for_building_env: bool
     :return: dict[str, str] -- environment variables
     """
     new_environ = {
@@ -363,24 +365,21 @@ def build_environ_for_test_environments():
         if is_environ_should_be_passed(key)
     }
 
+    if for_building_env:
+        new_environ[legion.config.MODEL_FILE[0]] = '/model.bin'
+
     return new_environ
 
 
 class ModelDockerBuilderContainerContext:
-    def __init__(self,
-                 python_wheel_path=None):
+    def __init__(self):
         # Base python Docker image
         self._docker_image_version = os.environ.get('BASE_IMAGE_VERSION', 'latest')
-        self._docker_tag = 'legion/base-python-image:{}'.format(self._docker_image_version)
+        self._docker_tag = 'legion/python-toolchain:{}'.format(self._docker_image_version)
         self._docker_base_image = None
         self._docker_container = None
         self._docker_client = legion.containers.docker.build_docker_client(None)
         self._docker_volume = None
-
-        # Legion python package
-        self._python_wheel_path = python_wheel_path
-        if not self._python_wheel_path:
-            self._python_wheel_path = get_latest_distribution()
 
     def _prepare_base_docker_container(self):
         """
@@ -405,25 +404,13 @@ class ModelDockerBuilderContainerContext:
             command='sleep 99999',  # keep container running for 99999 seconds
             detach=True,  # in the background
             remove=True,  # remove automatically after kill
-            environment=build_environ_for_test_environments(),  # pass required environment variables from host machine
+            environment=build_environ_for_test_environments(True),  # pass environment variables from host machine
             network_mode='host',  # host network is required because we need to connect to pydevd server
             mounts=[
                 docker_socket_mount,
                 workspace_mount
             ]
         )
-
-    def _setup_legion_wheel_in_docker_container(self):
-        """
-        Copy and install latest Legion wheel (should be prepared with `python setup.py bdist_wheel`)
-
-        :return: None
-        """
-        filename = os.path.basename(self._python_wheel_path)
-        self.copy_file(self._python_wheel_path, '/{}'.format(filename))
-
-        command = 'pip3 install /{}'.format(filename)
-        self.exec(command)
 
     def _shutdown_docker_container(self):
         """
@@ -441,7 +428,6 @@ class ModelDockerBuilderContainerContext:
     def __enter__(self):
         try:
             self._prepare_base_docker_container()
-            self._setup_legion_wheel_in_docker_container()
         except Exception as container_prepare_exception:
             self._shutdown_docker_container()
             print_docker_container_logs(self._docker_container)
@@ -574,15 +560,19 @@ class ModelDockerBuilderContainerContext:
 
         return model_id, model_version, model_file, output
 
-    def build_model_container(self, binary_model_file):
+    def build_model_container(self, binary_model_file=None):
         """
         Build model container from model binary with legionctl build
 
-        :param binary_model_file: path to binary model file
+        :param binary_model_file: (Optional) path to binary model file
         :type binary_model_file: str
         :return: tuple[str, str] -- Docker image sha, output of execution
         """
-        command = 'legionctl build --model-file "{}"'.format(binary_model_file)
+        command = 'legionctl build'
+
+        if binary_model_file:
+            command += ' --model-file "{}"'.format(binary_model_file)
+
         output = self.exec(command, workdir=self.workspace)
 
         tag = None
