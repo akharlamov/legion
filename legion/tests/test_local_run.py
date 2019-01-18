@@ -25,7 +25,7 @@ import legion.utils
 # Extend PYTHONPATH in order to import test tools and models
 sys.path.extend(os.path.dirname(__file__))
 
-from legion_test_utils import ModelLocalContainerExecutionContext, \
+from legion_test_utils import ModelLocalContainerExecutionContext, build_distribution, \
     ModelDockerBuilderContainerContext
 
 
@@ -40,6 +40,7 @@ class TestDeploy(unittest2.TestCase):
         :return: None
         """
         logging.basicConfig(level=logging.DEBUG)
+        build_distribution()
 
     def test_summation_model_build_and_query(self):
         with ModelDockerBuilderContainerContext() as context:

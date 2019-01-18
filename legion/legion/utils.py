@@ -154,15 +154,19 @@ class TemporaryFolder:
     Temporary folder representation with context manager (temp. directory deletes of context exit)
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, change_cwd=False, **kwargs):
         """
         Build temp. folder representation using tempfile.mkdtemp
 
         :param args: tempfile.mkdtemp args
         :type args: tuple
+        :param change_cwd: (Optional) change CWD to temporary path
+        :type change_cwd: bool
         :param kwargs: tempfile.mkdtemp kwargs
         :type kwargs: dict
         """
+        self._old_cwd = os.getcwd()
+        self._change_cwd = change_cwd
         self._path = tempfile.mkdtemp(*args, **kwargs)
 
     @property
@@ -173,6 +177,24 @@ class TemporaryFolder:
         :return: str -- path
         """
         return self._path
+
+    @property
+    def change_cwd(self):
+        """
+        Has directory been changed or not
+
+        :return: bool
+        """
+        return self._change_cwd
+
+    @property
+    def old_cwd(self):
+        """
+        Old CWD
+
+        :return: str
+        """
+        return self._old_cwd
 
     def remove(self):
         """
@@ -188,6 +210,8 @@ class TemporaryFolder:
 
         :return: :py:class:`legion.utils.TemporaryFolder`
         """
+        if self.change_cwd:
+            os.chdir(self.path)
         return self
 
     def __exit__(self, exit_type, value, traceback):
@@ -199,7 +223,10 @@ class TemporaryFolder:
         :param traceback: -
         :return: None
         """
+        if self.change_cwd:
+            os.chdir(self.old_cwd)
         self.remove()
+
 
 
 class Colors:

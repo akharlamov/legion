@@ -341,6 +341,19 @@ def print_docker_container_logs(container):
         print('Cannot get logs of container: {}'.format(container_log_access_exception))
 
 
+@contextlib.contextmanager
+def gather_stdout_stderr():
+    """
+    Context manager that temporarily redirects stdout/stderr to StringIO buffers
+
+    :return: (io.StringIO, io.StringIO) -- temporarily buffers
+    """
+    stdout, stderr = io.StringIO(), io.StringIO()
+
+    with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+        yield stdout, stderr
+
+
 def is_environ_should_be_passed(environ_name):
     """
     Is environ for tests? (should be copied)

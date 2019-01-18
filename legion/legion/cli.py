@@ -16,16 +16,18 @@
 """
 CLI logic for legion
 """
-
+import argparse
 import logging
 import os
 import stat
+import sys
 import time
 
 import legion.config
 import legion.containers.docker
 import legion.containers.headers
 import legion.k8s
+import legion.edi.security
 import legion.external.edi
 import legion.external.grafana
 import legion.pymodel
@@ -361,3 +363,172 @@ def sandbox(args):
 
     print('Sandbox has been created!')
     print('To activate run {!r} from command line'.format(path_to_activate))
+
+
+def list_dependencies(args):
+    """
+    Print package dependencies
+
+    :param args: command arguments
+    :type args: :py:class:`argparse.Namespace`
+    :return: None
+    """
+    dependencies = legion.utils.get_list_of_requirements()
+    for name, version in dependencies:
+        print('{}=={}'.format(name, version))
+
+
+def configure_logging(args):
+    """
+    Set-up appropriate log level
+
+    :param args: command arguments
+    :type args: :py:class:`argparse.Namespace`
+    :return: None
+    """
+    if args.verbose or legion.utils.string_to_bool(os.getenv('VERBOSE', '')):
+        log_level = logging.DEBUG
+    else:
+        log_level = logging.ERROR
+
+    logging.basicConfig(level=log_level,
+                        format='%(asctime)s - %(levelname)s - %(message)s',
+                        stream=sys.stderr)
+
+def build_parser():
+    """
+    Build parser for CLI
+
+    :return: :py:class:`argparse.ArgumentParser` -- CLI parser for LegionCTL
+    """
+    parser = argparse.ArgumentParser(description='legion Command-Line Interface')
+    parser.add_argument('--verbose',
+                        help='verbose log output',
+                        action='store_true')
+    parser.add_argument('--version',
+                        help='get package version',
+                        action='store_true')
+    subparsers = parser.add_subparsers()
+
+    # --------- LOGIN SECTION -----------
+    login_parser = subparsers.add_parser('login', description='Save edi credentials to the config')
+    legion.edi.security.add_edi_arguments(login_parser, required=True)
+    login_parser.set_defaults(func=legion.edi.security.login)
+
+    # --------- LOCAL DOCKER SECTION -----------
+    build_parser = subparsers.add_parser('build', description='build model into new docker image (should be run '
+                                                              'in the docker container)')
+    build_parser.add_argument('--model-file',
+                              type=str, help='serialized model file name')
+    build_parser.add_argument('--docker-image-tag',
+                              type=str, help='docker image tag')
+    build_parser.add_argument('--push-to-registry',
+                              type=str, help='docker registry address')
+    build_parser.set_defaults(func=build_model)
+
+    # --------- KUBERNETES SECTION -----------
+    deploy_k8s_parser = subparsers.add_parser('deploy',
+                                              description='deploys a model into a kubernetes cluster')
+    deploy_k8s_parser.add_argument('image',
+                                   type=str, help='docker image')
+    deploy_k8s_parser.add_argument('--local',
+                                   action='store_true',
+                                   help='deploy model locally. Incompatible with other arguments')
+    deploy_k8s_parser.add_argument('--port',
+                                   default=0,
+                                   type=int, help='port to listen on. Only for --local mode')
+    deploy_k8s_parser.add_argument('--model-iam-role',
+                                   type=str, help='IAM role to be used at model pod')
+    deploy_k8s_parser.add_argument('--scale',
+                                   default=1,
+                                   type=int, help='count of instances')
+    deploy_k8s_parser.add_argument('--livenesstimeout',
+                                   default=2,
+                                   type=int, help='model startup timeout for liveness probe')
+    deploy_k8s_parser.add_argument('--readinesstimeout',
+                                   default=2,
+                                   type=int, help='model startup timeout for readiness probe')
+    legion.external.edi.add_arguments_for_wait_operation(deploy_k8s_parser)
+    legion.edi.security.add_edi_arguments(deploy_k8s_parser)
+    deploy_k8s_parser.set_defaults(func=deploy_kubernetes)
+
+    inspect_k8s_parser = subparsers.add_parser('inspect',
+                                               description='get information about currently deployed models')
+    inspect_k8s_parser.add_argument('--model-id',
+                                    type=str, help='model ID')
+    inspect_k8s_parser.add_argument('--model-version',
+                                    type=str, help='model version')
+    inspect_k8s_parser.add_argument('--format',
+                                    default=VALID_INSPECT_FORMATS[0],
+                                    choices=VALID_INSPECT_FORMATS, help='output format')
+    inspect_k8s_parser.add_argument('--local',
+                                    action='store_true',
+                                    help='analyze local deployed models')
+    legion.edi.security.add_edi_arguments(inspect_k8s_parser)
+    inspect_k8s_parser.set_defaults(func=inspect_kubernetes)
+
+    scale_k8s_parser = subparsers.add_parser('scale',
+                                             description='change count of model pods')
+    scale_k8s_parser.add_argument('model_id',
+                                  type=str, help='model ID')
+    scale_k8s_parser.add_argument('scale',
+                                  type=int, help='new count of replicas')
+    scale_k8s_parser.add_argument('--model-version',
+                                  type=str, help='model version')
+    legion.external.edi.add_arguments_for_wait_operation(scale_k8s_parser)
+    legion.edi.security.add_edi_arguments(scale_k8s_parser)
+    scale_k8s_parser.set_defaults(func=scale_kubernetes)
+
+    undeploy_k8s_parser = subparsers.add_parser('undeploy',
+                                                description='undeploy model deployment')
+    undeploy_k8s_parser.add_argument('model_id',
+                                     type=str, help='model ID')
+    undeploy_k8s_parser.add_argument('--model-version',
+                                     type=str, help='model version')
+    undeploy_k8s_parser.add_argument('--grace-period',
+                                     default=0,
+                                     type=int, help='removal grace period')
+    undeploy_k8s_parser.add_argument('--ignore-not-found',
+                                     action='store_true', help='ignore if cannot found pod')
+    undeploy_k8s_parser.add_argument('--local',
+                                     action='store_true',
+                                     help='un-deploy local deployed model. Incompatible with --grace-period')
+    legion.external.edi.add_arguments_for_wait_operation(undeploy_k8s_parser)
+    legion.edi.security.add_edi_arguments(undeploy_k8s_parser)
+    undeploy_k8s_parser.set_defaults(func=undeploy_kubernetes)
+
+    # --------- SERVING SECTION -----------
+    pyserve_parser = subparsers.add_parser('pyserve', description='serve a python model')
+    pyserve_parser.add_argument('--model_file',
+                                type=str)
+    pyserve_parser.add_argument('--model-id',
+                                type=str)
+    pyserve_parser.add_argument('--legion-addr',
+                                type=str)
+    pyserve_parser.add_argument('--legion-port',
+                                type=int)
+    pyserve_parser.add_argument('--debug',
+                                type=legion.utils.string_to_bool)
+    pyserve_parser.set_defaults(func=legion.serving.pyserve.serve_model)
+
+    # --------- LOCAL SECTION -----------
+    sandbox_parser = subparsers.add_parser('create-sandbox', description='create sandbox')
+    sandbox_parser.add_argument('--image',
+                                type=str,
+                                default=os.getenv('LEGION_TOOLCHAIN',
+                                                  'legionplatform/python-toolchain:' + legion.__version__),
+                                help='explicitly set toolchain python image')
+    sandbox_parser.add_argument('--force-recreate',
+                                action='store_true',
+                                help='recreate sandbox if it already existed')
+    sandbox_parser.add_argument('rest',
+                                nargs=argparse.REMAINDER)
+    sandbox_parser.set_defaults(func=sandbox)
+
+    # --------- UTILS SECTION -----------
+    list_dependencies_parser = subparsers.add_parser('list-dependencies', description='list package dependencies')
+    list_dependencies_parser.set_defaults(func=list_dependencies)
+
+    # --------- END OF SECTIONS -----------
+
+    return parser
