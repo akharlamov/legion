@@ -17,6 +17,5 @@ ARG version=latest
 FROM legion/base-python-image:${version}
 
 # Install Legion
-ARG pip_extra_index_params=""
-ARG pip_legion_version_string=""
-RUN pip3 install --disable-pip-version-check $pip_extra_index_params legion$pip_legion_version_string
+COPY *.whl /
+RUN pip3 install --disable-pip-version-check /legion*.whl && rm -f /legion*.whl

@@ -402,8 +402,10 @@ EOL
                 stage("Build Python Toolchain") {
                     steps {
                         sh """
+                        rm -f k8s/toolchains/python/*.whl
+                        cp $(find . -name "*.whl" -print0 | xargs -0 ls -1 -t | head -1) k8s/toolchains/python/
                         cd k8s/toolchains/python
-                        docker build ${Globals.dockerCacheArg} --build-arg version="${Globals.buildVersion}" --build-arg pip_extra_index_params="--extra-index-url ${env.param_pypi_repository}" --build-arg pip_legion_version_string="==${Globals.buildVersion}" -t legion/python-toolchain:${Globals.buildVersion} ${Globals.dockerLabels} .
+                        docker build ${Globals.dockerCacheArg} --build-arg version="${Globals.buildVersion}"  -t legion/python-toolchain:${Globals.buildVersion} ${Globals.dockerLabels} .
                         """
                     }
                 }
