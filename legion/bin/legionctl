@@ -76,6 +76,12 @@ if __name__ == '__main__':
                                               description='deploys a model into a kubernetes cluster')
     deploy_k8s_parser.add_argument('image',
                                    type=str, help='docker image')
+    deploy_k8s_parser.add_argument('--local',
+                                   action='store_true',
+                                   help='deploy model locally. Incompatible with other arguments')
+    deploy_k8s_parser.add_argument('--port',
+                                   default=0,
+                                   type=int, help='port to listen on. Only for --local mode')
     deploy_k8s_parser.add_argument('--model-iam-role',
                                    type=str, help='IAM role to be used at model pod')
     deploy_k8s_parser.add_argument('--scale',
@@ -100,6 +106,9 @@ if __name__ == '__main__':
     inspect_k8s_parser.add_argument('--format',
                                     default=VALID_INSPECT_FORMATS[0],
                                     choices=VALID_INSPECT_FORMATS, help='output format')
+    inspect_k8s_parser.add_argument('--local',
+                                    action='store_true',
+                                    help='analyze local deployed models')
     add_edi_arguments(inspect_k8s_parser)
     inspect_k8s_parser.set_defaults(func=inspect_kubernetes)
 
@@ -126,6 +135,9 @@ if __name__ == '__main__':
                                      type=int, help='removal grace period')
     undeploy_k8s_parser.add_argument('--ignore-not-found',
                                      action='store_true', help='ignore if cannot found pod')
+    undeploy_k8s_parser.add_argument('--local',
+                                     action='store_true',
+                                     help='un-deploy local deployed model. Incompatible with --grace-period')
     add_arguments_for_wait_operation(undeploy_k8s_parser)
     add_edi_arguments(undeploy_k8s_parser)
     undeploy_k8s_parser.set_defaults(func=undeploy_kubernetes)
@@ -154,6 +166,8 @@ if __name__ == '__main__':
     sandbox_parser.add_argument('--force-recreate',
                                 action='store_true',
                                 help='recreate sandbox if it already existed')
+    sandbox_parser.add_argument('rest',
+                                nargs=argparse.REMAINDER)
     sandbox_parser.set_defaults(func=sandbox)
 
     # --------- UTILS SECTION -----------

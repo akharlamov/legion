@@ -16,7 +16,9 @@
 keys/
 cover/
 
-activate.sh
+.DS_Store
+
+legion-activate.sh
 legion/legion/data/Pipfile.lock
 
 test.model
